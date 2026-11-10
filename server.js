@@ -2,7 +2,6 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
-import { build as viteBuild } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,47 +11,60 @@ const PORT = Number(process.env.PORT) || 3000;
 
 const distPath = path.join(__dirname, 'dist');
 const indexPath = path.join(distPath, 'index.html');
-let buildError = null;
 
-// Programmatic build using Vite's internal Node.js API (no shell or npm command required)
-if (!existsSync(indexPath)) {
-  console.log('⚡ [Hostinger Deploy] dist/index.html not found. Building with Vite programmatic API...');
+let isBuilding = false;
+let buildError = null;
+let buildComplete = existsSync(indexPath);
+
+async function startBackgroundBuild() {
+  if (buildComplete || isBuilding) return;
+  isBuilding = true;
+  console.log('⚡ [Hostinger] Starting background Vite build...');
   try {
+    const { build: viteBuild } = await import('vite');
     await viteBuild();
-    console.log('✅ [Hostinger Deploy] Production build generated successfully!');
+    buildComplete = true;
+    buildError = null;
+    console.log('✅ [Hostinger] Vite build completed successfully!');
   } catch (err) {
     buildError = err?.stack || err?.message || String(err);
-    console.error('❌ [Hostinger Deploy] Programmatic build failed:', buildError);
+    console.error('❌ [Hostinger] Vite build failed:', buildError);
+  } finally {
+    isBuilding = false;
   }
 }
 
-// Serve static assets from Vite's build directory (dist)
-app.use(express.static(distPath));
+// 1. Immediately start listening so Hostinger reverse proxy never gets 503
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Muqabla server listening immediately on port ${PORT}`);
+  if (!buildComplete) {
+    startBackgroundBuild();
+  }
+});
 
-// SPA fallback: Route all incoming requests to index.html
-app.get('*', async (req, res) => {
-  if (existsSync(indexPath)) {
+// Dynamic static handler (once built, serves static files from dist)
+app.use((req, res, next) => {
+  if (buildComplete && existsSync(distPath)) {
+    return express.static(distPath)(req, res, next);
+  }
+  next();
+});
+
+// SPA fallback & status router
+app.get('*', (req, res) => {
+  if (buildComplete && existsSync(indexPath)) {
     return res.sendFile(indexPath);
   }
 
-  // If still not built, try building one more time
-  try {
-    await viteBuild();
-    if (existsSync(indexPath)) {
-      return res.sendFile(indexPath);
-    }
-  } catch (err) {
-    buildError = err?.stack || err?.message || String(err);
-  }
-
-  res.status(500).send(`
+  // Return status 200 with auto-refresh so Hostinger does not treat it as an error
+  res.status(200).send(`
     <!DOCTYPE html>
     <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="refresh" content="5">
-        <title>Muqabla - Build Status</title>
+        <meta http-equiv="refresh" content="3">
+        <title>Muqabla - Launching</title>
         <style>
           body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -63,45 +75,43 @@ app.get('*', async (req, res) => {
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            padding: 1rem;
+            padding: 1.5rem;
             box-sizing: border-box;
           }
           .card {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1.5rem;
-            padding: 2rem;
-            max-width: 500px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 1.25rem;
+            padding: 2.25rem;
+            max-width: 480px;
             width: 100%;
             text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
           }
           .spinner {
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             border: 3px solid rgba(16, 185, 129, 0.2);
             border-top-color: #10b981;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+            margin: 0 auto 1.25rem;
           }
           @keyframes spin { to { transform: rotate(360deg); } }
-          h2 { margin: 0 0 0.5rem; font-size: 1.25rem; }
-          p { color: #94a3b8; font-size: 0.875rem; margin: 0 0 1rem; line-height: 1.5; }
-          pre { background: #000; color: #f87171; text-align: left; padding: 0.75rem; border-radius: 0.5rem; font-size: 11px; overflow-x: auto; white-space: pre-wrap; }
+          h2 { margin: 0 0 0.5rem; font-size: 1.3rem; font-weight: 700; color: #f8fafc; }
+          p { color: #94a3b8; font-size: 0.9rem; margin: 0 0 1rem; line-height: 1.5; }
+          .error-box { background: #1e1b2e; border: 1px solid #ef4444; color: #fca5a5; text-align: left; padding: 1rem; border-radius: 0.75rem; font-size: 12px; overflow-x: auto; white-space: pre-wrap; margin-top: 1rem; }
+          .btn { background: #10b981; color: #000; border: none; padding: 0.6rem 1.2rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; margin-top: 1rem; }
         </style>
       </head>
       <body>
         <div class="card">
           <div class="spinner"></div>
-          <h2>⚡ Initializing Muqabla Application...</h2>
-          <p>The production bundle is compiling on Hostinger. Please wait a moment...</p>
-          ${buildError ? `<pre>${buildError}</pre>` : ''}
+          <h2>⚡ Finalizing Muqabla Application...</h2>
+          <p>Compiling assets for first-time launch. This page will refresh automatically in 3 seconds.</p>
+          ${buildError ? `<div class="error-box"><strong>Build Diagnostic:</strong>\n${buildError}</div><button class="btn" onclick="location.reload()">Retry Now</button>` : ''}
         </div>
       </body>
     </html>
   `);
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Muqabla application running on http://0.0.0.0:${PORT}`);
 });
