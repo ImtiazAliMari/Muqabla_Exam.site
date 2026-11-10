@@ -1,0 +1,6 @@
+{
+  "name": "Muqabla - Pakistan Competitive Exam Intelligence",
+  "description": "Community-driven competitive exam intelligence platform for Pakistani job seekers and students. Benchmark marks, estimate percentiles, and assess recruitment cutoff standing across NTS, FPSC, PPSC, SPSC, STS, and HEC tests.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
