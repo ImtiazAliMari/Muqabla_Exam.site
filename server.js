@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
-import { execSync } from 'child_process';
+import { build as viteBuild } from 'vite';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,30 +14,35 @@ const distPath = path.join(__dirname, 'dist');
 const indexPath = path.join(distPath, 'index.html');
 let buildError = null;
 
-function ensureBuild() {
-  if (existsSync(indexPath)) return true;
-  console.log('⚡ [Hostinger Deploy] dist/index.html not found! Triggering build...');
+// Programmatic build using Vite's internal Node.js API (no shell or npm command required)
+if (!existsSync(indexPath)) {
+  console.log('⚡ [Hostinger Deploy] dist/index.html not found. Building with Vite programmatic API...');
   try {
-    execSync('npm run build', { stdio: 'pipe' });
-    buildError = null;
-    return true;
+    await viteBuild();
+    console.log('✅ [Hostinger Deploy] Production build generated successfully!');
   } catch (err) {
-    buildError = err.stderr ? err.stderr.toString() : err.message;
-    console.error('❌ [Hostinger Deploy] Auto-build failed:', buildError);
-    return false;
+    buildError = err?.stack || err?.message || String(err);
+    console.error('❌ [Hostinger Deploy] Programmatic build failed:', buildError);
   }
 }
-
-// Initial check on server launch
-ensureBuild();
 
 // Serve static assets from Vite's build directory (dist)
 app.use(express.static(distPath));
 
 // SPA fallback: Route all incoming requests to index.html
-app.get('*', (req, res) => {
-  if (existsSync(indexPath) || ensureBuild()) {
+app.get('*', async (req, res) => {
+  if (existsSync(indexPath)) {
     return res.sendFile(indexPath);
+  }
+
+  // If still not built, try building one more time
+  try {
+    await viteBuild();
+    if (existsSync(indexPath)) {
+      return res.sendFile(indexPath);
+    }
+  } catch (err) {
+    buildError = err?.stack || err?.message || String(err);
   }
 
   res.status(500).send(`
