@@ -2,6 +2,17 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
+import { Readable } from 'stream';
+
+// Guard against headless container environments (Hostinger/Docker) where stdin throws EEXIST
+try {
+  const dummyStdin = new Readable({ read() {} });
+  Object.defineProperty(process, 'stdin', {
+    value: dummyStdin,
+    configurable: true,
+    writable: true,
+  });
+} catch (_) {}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
