@@ -7,6 +7,7 @@ interface LoginModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   initialMode?: 'login' | 'register';
+  confirmationNotice?: string | null;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
@@ -14,8 +15,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onClose,
   onSuccess,
   initialMode = 'login',
+  confirmationNotice,
 }) => {
-  const { login, signUp } = useAuth();
+  const { login, signUp, resendVerificationEmail } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,14 +25,32 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [province, setProvince] = useState('Punjab');
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendStatus, setResendStatus] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const handleResend = async () => {
+    if (!unconfirmedEmail && !email.trim()) return;
+    const targetEmail = (unconfirmedEmail || email).trim();
+    setIsResending(true);
+    setResendStatus(null);
+    const res = await resendVerificationEmail(targetEmail);
+    setIsResending(false);
+    if (res.success) {
+      setResendStatus('Link sent! Check your email inbox.');
+    } else {
+      setResendStatus(res.error || 'Failed to resend. Try again shortly.');
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+    setResendStatus(null);
 
     if (!email.trim() || !password.trim()) {
       setError('Please provide both email and password.');
@@ -42,10 +62,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setIsSubmitting(false);
 
     if (!res.success) {
-      setError(res.error || 'Invalid credentials or user does not exist.');
+      const errMsg = res.error || '';
+      if (errMsg.toLowerCase().includes('email not confirmed')) {
+        setUnconfirmedEmail(email.trim());
+        setError('Email address not confirmed. Please check your inbox and confirm your email before logging in.');
+      } else {
+        setUnconfirmedEmail(null);
+        setError(errMsg || 'Invalid credentials or user does not exist.');
+      }
       return;
     }
 
+    setUnconfirmedEmail(null);
     setSuccessMsg('Authenticated successfully!');
     setTimeout(() => {
       if (onSuccess) onSuccess();
@@ -57,6 +85,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+    setResendStatus(null);
 
     if (!name.trim() || !email.trim() || !password.trim()) {
       setError('Please fill out all required fields.');
@@ -74,6 +103,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
     if (!res.success) {
       setError(res.error || 'Registration failed.');
+      return;
+    }
+
+    if (res.requiresEmailConfirmation) {
+      setUnconfirmedEmail(email.trim());
+      setSuccessMsg(`Registration successful! We sent a confirmation link to ${email}. Please check your email inbox and click "Confirm email address" before logging in.`);
+      setMode('login');
       return;
     }
 
@@ -110,14 +146,51 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </p>
         </div>
 
-        {/* Error / Success Notifications */}
-        {error && (
+        {/* Confirmation & Notification Banners */}
+        {confirmationNotice && (
+          <div className="mb-4 rounded-xl border border-emerald-500/40 bg-emerald-950/40 p-3.5 text-xs text-emerald-200 flex items-start gap-2.5 animate-pulse">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400 mt-0.5" />
+            <div>
+              <p className="font-semibold text-emerald-300">Email Confirmed!</p>
+              <p className="text-emerald-200/90 mt-0.5">{confirmationNotice}</p>
+            </div>
+          </div>
+        )}
+
+        {unconfirmedEmail && (
+          <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-950/40 p-3.5 text-xs text-amber-200">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+              <div className="space-y-1.5 flex-1">
+                <p className="font-semibold text-amber-300">Email Confirmation Required</p>
+                <p className="text-amber-200/90 leading-relaxed">
+                  We sent a confirmation link to <strong className="text-white">{unconfirmedEmail}</strong>. Please check your inbox and click <strong className="text-emerald-300">Confirm email address</strong>.
+                </p>
+                <div className="pt-1 flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={isResending}
+                    onClick={handleResend}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 underline cursor-pointer disabled:opacity-50"
+                  >
+                    {isResending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Mail className="h-3.5 w-3.5" />}
+                    Resend Confirmation Email
+                  </button>
+                  {resendStatus && <span className="text-[11px] text-emerald-300 font-medium">({resendStatus})</span>}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {error && !unconfirmedEmail && (
           <div className="mb-4 rounded-xl border border-red-500/30 bg-red-950/30 p-3 text-xs text-red-300 flex items-center gap-2">
             <AlertCircle className="h-4 w-4 shrink-0 text-red-400" />
             <span>{error}</span>
           </div>
         )}
-        {successMsg && (
+
+        {successMsg && !confirmationNotice && (
           <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-950/30 p-3 text-xs text-emerald-300 flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
             <span>{successMsg}</span>

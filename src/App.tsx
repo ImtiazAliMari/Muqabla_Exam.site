@@ -30,9 +30,28 @@ export default function App() {
 
   // Modals state
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [confirmationNotice, setConfirmationNotice] = useState<string | null>(null);
   const [isSubmitScoreOpen, setIsSubmitScoreOpen] = useState(false);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [scoreSubmissionVersion, setScoreSubmissionVersion] = useState(0);
+
+  // Detect email confirmation from URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
+
+    const isConfirmedLink = 
+      searchParams.get('confirmed') === 'true' || 
+      hash.includes('type=signup') || 
+      hash.includes('type=email_change') || 
+      (hash.includes('access_token=') && !currentUser);
+
+    if (isConfirmedLink) {
+      setConfirmationNotice('Your email address has been verified successfully! Please log in to access your candidate dashboard.');
+      setIsLoginOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [currentUser]);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -448,10 +467,15 @@ export default function App() {
 
       <LoginModal
         isOpen={isLoginOpen}
-        onClose={() => setIsLoginOpen(false)}
+        confirmationNotice={confirmationNotice}
+        onClose={() => {
+          setIsLoginOpen(false);
+          setConfirmationNotice(null);
+        }}
         onSuccess={() => {
           loadDatabaseData();
           setIsLoginOpen(false);
+          setConfirmationNotice(null);
         }}
       />
     </div>

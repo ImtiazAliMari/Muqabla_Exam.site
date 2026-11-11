@@ -11,7 +11,8 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  signUp: (email: string, password: string, name: string, domicile?: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, name: string, domicile?: string) => Promise<{ success: boolean; error?: string; requiresEmailConfirmation?: boolean }>;
+  resendVerificationEmail: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (data: Partial<CurrentUser>) => Promise<boolean>;
   refreshProfile: () => Promise<void>;
@@ -156,16 +157,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     password: string,
     name: string,
     domicile: string = 'All Pakistan'
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; error?: string; requiresEmailConfirmation?: boolean }> => {
     try {
       setIsLoading(true);
       const cleanEmail = email.trim().toLowerCase();
       const cleanName = name.trim();
 
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/?confirmed=true`
+        : 'https://muqablamerit.site/?confirmed=true';
+
       const { data, error } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             name: cleanName,
             domicile,
@@ -178,16 +184,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: error.message };
       }
 
-      if (data.user) {
-        // Fetch or create profile
+      const requiresConfirmation = !data.session;
+
+      if (data.user && data.session) {
+        // Fetch or create profile only if session established
         const prof = await fetchUserProfile(data.user);
         setUser(prof);
       }
       setIsLoading(false);
-      return { success: true };
+      return { success: true, requiresEmailConfirmation: requiresConfirmation };
     } catch (err: any) {
       setIsLoading(false);
       return { success: false, error: err?.message || 'Registration failed.' };
+    }
+  };
+
+  const resendVerificationEmail = async (email: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const redirectUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/?confirmed=true`
+        : 'https://muqablamerit.site/?confirmed=true';
+
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Failed to resend confirmation email.' };
     }
   };
 
@@ -232,6 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin,
         login,
         signUp,
+        resendVerificationEmail,
         logout,
         updateProfile,
         refreshProfile,
