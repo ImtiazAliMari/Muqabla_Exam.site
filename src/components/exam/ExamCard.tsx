@@ -95,11 +95,39 @@ export const ExamCard: React.FC<ExamCardProps> = ({
             </span>
           </div>
         </div>
+        {/* Last Year Top & Expected Last Seat Merit Strip */}
+        {(exam.lastYearTopScore !== undefined || exam.lastYearLastSeatScore !== undefined || exam.expectedLastSeatScore) && (
+          <div className="mt-3 p-2.5 rounded-xl bg-amber-500/[0.06] border border-amber-500/20 grid grid-cols-3 gap-2 text-[11px]">
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-400 block">Last Yr Top</span>
+              <span className="font-mono font-bold text-amber-300">
+                {exam.lastYearTopScore !== undefined ? `${exam.lastYearTopScore}/${exam.totalMarks}` : '—'}
+              </span>
+            </div>
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-400 block">Last Seat (LY)</span>
+              <span className="font-mono font-bold text-sky-300">
+                {exam.lastYearLastSeatScore !== undefined ? `${exam.lastYearLastSeatScore}/${exam.totalMarks}` : '—'}
+              </span>
+            </div>
+            <div>
+              <span className="text-[9px] uppercase tracking-wider text-slate-400 block">Exp. Last Seat</span>
+              <span className="font-mono font-bold text-emerald-300">
+                {exam.expectedLastSeatScore ? `${exam.expectedLastSeatScore}` : '—'}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Footer / Candidate Standing or Prompt */}
       <div className="mt-5 pt-3.5 border-t border-white/10 flex items-center justify-between text-xs">
-        {userSubmission ? (
+        {exam.isReadOnlyDemo ? (
+          <div className="text-amber-300 text-[11px] font-medium flex items-center gap-1.5">
+            <TrendingUp className="h-3.5 w-3.5 text-amber-400" />
+            <span>Sample Showcase (Read-Only)</span>
+          </div>
+        ) : userSubmission ? (
           <div className="flex items-center gap-2 text-emerald-300">
             <Award className="h-4 w-4 text-emerald-400" />
             <span>

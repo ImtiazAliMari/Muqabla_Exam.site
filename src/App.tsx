@@ -231,8 +231,11 @@ export default function App() {
               onSelectExam={handleSelectExam}
               onOpenLogin={() => setIsLoginOpen(true)}
               onUpdateScore={(examId) => {
+                const target = allExams.find((e) => e.id === examId);
                 setSelectedExamId(examId);
-                setIsSubmitScoreOpen(true);
+                if (!target?.isReadOnlyDemo) {
+                  setIsSubmitScoreOpen(true);
+                }
               }}
             />
           </div>
@@ -253,6 +256,11 @@ export default function App() {
               currentUser={currentUser}
               onSelectExam={handleSelectExam}
               onOpenSubmitScore={(examId) => {
+                const target = allExams.find((e) => e.id === (examId || selectedExamId));
+                if (target?.isReadOnlyDemo) {
+                  if (examId) handleSelectExam(examId);
+                  return;
+                }
                 if (examId) setSelectedExamId(examId);
                 setIsSubmitScoreOpen(true);
               }}
@@ -317,6 +325,7 @@ export default function App() {
                         <option value="NTS">NTS</option>
                         <option value="PPSC">PPSC</option>
                         <option value="SPSC">SPSC</option>
+                        <option value="STS">STS (Sukkur IBA)</option>
                         <option value="KPPSC">KPPSC</option>
                         <option value="BPSC">BPSC</option>
                       </select>

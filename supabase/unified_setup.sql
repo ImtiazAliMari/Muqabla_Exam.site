@@ -460,6 +460,19 @@ END $$;
 INSERT INTO public.exams (id, title, category, agency, conducted_date, expected_result_date, status, description, total_marks, negative_marking, total_vacancies)
 VALUES 
 (
+    'sts-sukkur-iba-sthp-2027',
+    'Sukkur IBA University — Sindh Talent Hunt Program (STHP) 2027',
+    'Merit-cum-Need Scholarship (BBA, BS, BE, B.Ed)',
+    'STS',
+    '2026-11-08',
+    NULL,
+    'Verified',
+    'Sukkur IBA University & Government of Sindh — Sindh Talent Hunt Program (STHP) 2027 (200 Foundation / 100 Regular Scholarship Seats).',
+    100,
+    0,
+    200
+),
+(
     'nts-ismo-engineer-ee-2026',
     'NTS Engineer-I & Engineer-II (Electrical / Electronics) — ISMO 2026',
     'Power System Operations & Electrical Engineering',

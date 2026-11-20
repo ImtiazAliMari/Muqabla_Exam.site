@@ -90,70 +90,87 @@ export const examService = {
       return { data: [], error: error.message };
     }
 
-    const exams: ExamFolder[] = (data || []).map((row) => ({
-      id: row.id,
-      name: row.title,
-      organization: row.description || 'Government Department',
-      testingAgency: row.agency,
-      jobPost: row.category,
-      department: row.category,
-      testDate: row.conducted_date || new Date().toISOString().slice(0, 10),
-      resultDate: row.expected_result_date || undefined,
-      totalMarks: Number(row.total_marks || 100),
-      passingMarks: 50,
-      negativeMarking: Boolean(Number(row.negative_marking) > 0),
-      negativeMarkingValue: Number(row.negative_marking) || undefined,
-      testType: 'MCQs Screening Test',
-      totalVacancies: Number(row.total_vacancies || 0),
-      quotaAllocation: {
-        openMerit: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.1)),
-        punjab: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.5)),
-        sindhUrban: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.08)),
-        sindhRural: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.11)),
-        kpk: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.11)),
-        balochistan: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.06)),
-      },
-      province: 'All Pakistan / Federal',
-      status: row.status as ExamFolder['status'],
-      managerId: row.created_by || 'admin',
-      managerName: 'Official Commission',
-      isVerified: row.status === 'Verified' || row.status === 'Completed' || row.status === 'Results Awaited',
-      verificationRequested: false,
-      createdAt: row.created_at ? row.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      lastUpdated: row.updated_at ? row.updated_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      followersCount: 150,
-      historicalRecords: [],
-      officialCutoff: row.official_cutoff ? Number(row.official_cutoff) : null,
-    }));
+    const exams: ExamFolder[] = (data || []).map((row) => {
+      const seedMatch = initialExams.find((i) => i.id === row.id);
+      return {
+        id: row.id,
+        name: row.title,
+        organization: seedMatch?.organization || row.description || 'Government Department',
+        testingAgency: row.agency,
+        jobPost: seedMatch?.jobPost || row.category,
+        department: seedMatch?.department || row.category,
+        bpsScale: seedMatch?.bpsScale,
+        testDate: row.conducted_date || seedMatch?.testDate || new Date().toISOString().slice(0, 10),
+        resultDate: row.expected_result_date || seedMatch?.resultDate || undefined,
+        totalMarks: Number(row.total_marks || 100),
+        passingMarks: seedMatch?.passingMarks || 50,
+        negativeMarking: Boolean(Number(row.negative_marking) > 0),
+        negativeMarkingValue: Number(row.negative_marking) || seedMatch?.negativeMarkingValue || undefined,
+        testType: seedMatch?.testType || 'MCQs Screening Test',
+        totalVacancies: Number(row.total_vacancies || seedMatch?.totalVacancies || 0),
+        quotaAllocation: seedMatch?.quotaAllocation || {
+          openMerit: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.1)),
+          punjab: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.5)),
+          sindhUrban: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.08)),
+          sindhRural: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.11)),
+          kpk: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.11)),
+          balochistan: Math.max(1, Math.round(Number(row.total_vacancies || 10) * 0.06)),
+        },
+        shortlistRatio: seedMatch?.shortlistRatio,
+        interviewRatio: seedMatch?.interviewRatio,
+        province: seedMatch?.province || 'All Pakistan / Federal',
+        status: (seedMatch?.status || row.status) as ExamFolder['status'],
+        officialAdvertisementUrl: seedMatch?.officialAdvertisementUrl,
+        officialAnswerKeyUrl: seedMatch?.officialAnswerKeyUrl,
+        officialResultUrl: seedMatch?.officialResultUrl,
+        managerId: row.created_by || seedMatch?.managerId || 'admin',
+        managerName: seedMatch?.managerName || 'Official Commission',
+        isVerified: row.status === 'Verified' || row.status === 'Completed' || row.status === 'Results Awaited' || Boolean(seedMatch?.isVerified),
+        verificationRequested: false,
+        createdAt: row.created_at ? row.created_at.slice(0, 10) : (seedMatch?.createdAt || new Date().toISOString().slice(0, 10)),
+        lastUpdated: row.updated_at ? row.updated_at.slice(0, 10) : (seedMatch?.lastUpdated || new Date().toISOString().slice(0, 10)),
+        followersCount: seedMatch?.followersCount || 150,
+        additionalNotes: seedMatch?.additionalNotes,
+        isReadOnlyDemo: seedMatch?.isReadOnlyDemo,
+        lastYearLabel: seedMatch?.lastYearLabel,
+        lastYearTopScore: seedMatch?.lastYearTopScore,
+        lastYearLastSeatScore: seedMatch?.lastYearLastSeatScore,
+        expectedLastSeatScore: seedMatch?.expectedLastSeatScore,
+        historicalRecords: seedMatch?.historicalRecords || [],
+        officialCutoff: row.official_cutoff ? Number(row.official_cutoff) : (seedMatch?.officialCutoff ?? null),
+      };
+    });
 
     return { data: exams };
   },
 
   async getExamById(id: string): Promise<ExamFolder | null> {
+    const seedMatch = initialExams.find((i) => i.id === id);
     const { data, error } = await supabase
       .from('exams')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (error || !data) return null;
+    if (error || !data) return seedMatch || null;
 
     return {
       id: data.id,
       name: data.title,
-      organization: data.description || 'Government Department',
+      organization: seedMatch?.organization || data.description || 'Government Department',
       testingAgency: data.agency,
-      jobPost: data.category,
-      department: data.category,
-      testDate: data.conducted_date || new Date().toISOString().slice(0, 10),
-      resultDate: data.expected_result_date || undefined,
+      jobPost: seedMatch?.jobPost || data.category,
+      department: seedMatch?.department || data.category,
+      bpsScale: seedMatch?.bpsScale,
+      testDate: data.conducted_date || seedMatch?.testDate || new Date().toISOString().slice(0, 10),
+      resultDate: data.expected_result_date || seedMatch?.resultDate || undefined,
       totalMarks: Number(data.total_marks || 100),
-      passingMarks: 50,
+      passingMarks: seedMatch?.passingMarks || 50,
       negativeMarking: Boolean(Number(data.negative_marking) > 0),
-      negativeMarkingValue: Number(data.negative_marking) || undefined,
-      testType: 'MCQs Screening Test',
-      totalVacancies: Number(data.total_vacancies || 0),
-      quotaAllocation: {
+      negativeMarkingValue: Number(data.negative_marking) || seedMatch?.negativeMarkingValue || undefined,
+      testType: seedMatch?.testType || 'MCQs Screening Test',
+      totalVacancies: Number(data.total_vacancies || seedMatch?.totalVacancies || 0),
+      quotaAllocation: seedMatch?.quotaAllocation || {
         openMerit: 2,
         punjab: 5,
         sindhUrban: 1,
@@ -161,17 +178,28 @@ export const examService = {
         kpk: 1,
         balochistan: 1,
       },
-      province: 'All Pakistan / Federal',
-      status: data.status as ExamFolder['status'],
-      managerId: data.created_by || 'admin',
-      managerName: 'Official Commission',
+      shortlistRatio: seedMatch?.shortlistRatio,
+      interviewRatio: seedMatch?.interviewRatio,
+      province: seedMatch?.province || 'All Pakistan / Federal',
+      status: (seedMatch?.status || data.status) as ExamFolder['status'],
+      officialAdvertisementUrl: seedMatch?.officialAdvertisementUrl,
+      officialAnswerKeyUrl: seedMatch?.officialAnswerKeyUrl,
+      officialResultUrl: seedMatch?.officialResultUrl,
+      managerId: data.created_by || seedMatch?.managerId || 'admin',
+      managerName: seedMatch?.managerName || 'Official Commission',
       isVerified: true,
       verificationRequested: false,
-      createdAt: data.created_at ? data.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      lastUpdated: data.updated_at ? data.updated_at.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      followersCount: 150,
-      historicalRecords: [],
-      officialCutoff: data.official_cutoff ? Number(data.official_cutoff) : null,
+      createdAt: data.created_at ? data.created_at.slice(0, 10) : (seedMatch?.createdAt || new Date().toISOString().slice(0, 10)),
+      lastUpdated: data.updated_at ? data.updated_at.slice(0, 10) : (seedMatch?.lastUpdated || new Date().toISOString().slice(0, 10)),
+      followersCount: seedMatch?.followersCount || 150,
+      additionalNotes: seedMatch?.additionalNotes,
+      isReadOnlyDemo: seedMatch?.isReadOnlyDemo,
+      lastYearLabel: seedMatch?.lastYearLabel,
+      lastYearTopScore: seedMatch?.lastYearTopScore,
+      lastYearLastSeatScore: seedMatch?.lastYearLastSeatScore,
+      expectedLastSeatScore: seedMatch?.expectedLastSeatScore,
+      historicalRecords: seedMatch?.historicalRecords || [],
+      officialCutoff: data.official_cutoff ? Number(data.official_cutoff) : (seedMatch?.officialCutoff ?? null),
     };
   },
 
@@ -642,6 +670,14 @@ export const scoreService = {
     evidenceName?: string;
     rollNumber?: string;
   }): Promise<{ success: boolean; error?: string; warning?: string }> {
+    const matchedExam = initialExams.find((e) => e.id === submission.examId);
+    if (matchedExam?.isReadOnlyDemo) {
+      return {
+        success: false,
+        error: 'Score submissions are closed for this read-only benchmark showcase test.',
+      };
+    }
+
     if (submission.obtainedMarks < 0 || submission.obtainedMarks > submission.totalMarks) {
       return { success: false, error: 'Obtained marks must be within 0 and total marks.' };
     }

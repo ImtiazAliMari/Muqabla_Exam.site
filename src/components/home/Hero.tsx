@@ -93,7 +93,7 @@ export const Hero: React.FC<HeroProps> = ({
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search test: 'NTS ISMO Engineer', 'FPSC Customs', 'PPSC Lecturer'..."
+                  placeholder="Search test: 'Sukkur IBA STHP 2027', 'NTS ISMO', 'FPSC Customs'..."
                   className="w-full bg-transparent pl-12 pr-28 py-4 text-sm text-white placeholder-slate-400 focus:outline-none"
                 />
                 <button

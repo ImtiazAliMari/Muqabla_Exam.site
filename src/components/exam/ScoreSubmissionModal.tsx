@@ -217,7 +217,24 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
           </div>
         )}
 
-        {isLoadingExisting ? (
+        {exam.isReadOnlyDemo ? (
+          <div className="py-8 text-center space-y-3">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <h3 className="text-sm font-bold text-white">Read-Only Sample Showcase</h3>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+              Score entry is disabled on this historical benchmark folder. Please choose an active recruitment or admission test (such as ISMO 2026 or Sukkur IBA STHP 2027) to submit your marks.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        ) : isLoadingExisting ? (
           <div className="py-12 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin text-emerald-400" />
             <span>Retrieving your examination record...</span>

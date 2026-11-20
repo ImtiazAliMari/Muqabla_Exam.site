@@ -347,7 +347,7 @@ export const CandidateDashboard: React.FC<CandidateDashboardProps> = ({
                   </p>
                   <button
                     onClick={() => {
-                      if (onUpdateScore) {
+                      if (!mostPopular.exam.isReadOnlyDemo && onUpdateScore) {
                         onUpdateScore(mostPopular.exam.id);
                       } else {
                         onSelectExam(mostPopular.exam.id);
@@ -355,7 +355,11 @@ export const CandidateDashboard: React.FC<CandidateDashboardProps> = ({
                     }}
                     className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg transition-colors cursor-pointer shadow-md shadow-amber-950/40"
                   >
-                    <span>Check Result & Benchmark Score</span>
+                    <span>
+                      {mostPopular.exam.isReadOnlyDemo
+                        ? 'Inspect Sample Benchmark'
+                        : 'Check Result & Benchmark Score'}
+                    </span>
                     <ArrowUpRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -801,7 +805,9 @@ export const CandidateDashboard: React.FC<CandidateDashboardProps> = ({
             </div>
 
             <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
-              {(allExams.length > 0 ? allExams : initialExams).map((e) => {
+              {(allExams.length > 0 ? allExams : initialExams)
+                .filter((e) => !e.isReadOnlyDemo)
+                .map((e) => {
                 const existingSub = userSubmissions.find((s) => s.examId === e.id);
                 return (
                   <div

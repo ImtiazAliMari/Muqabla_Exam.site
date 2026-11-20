@@ -204,7 +204,9 @@ export const LiveSpatialRadar: React.FC<LiveSpatialRadarProps> = ({
             </div>
 
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              {realExamSubs.length === 0
+              {previewExam.isReadOnlyDemo
+                ? `Read-only sample showcase.${previewExam.lastYearTopScore ? ` Last year top: ${previewExam.lastYearTopScore}/${previewExam.totalMarks}.` : ''}${previewExam.lastYearLastSeatScore ? ` Last seat closed at ${previewExam.lastYearLastSeatScore}.` : ''}${previewExam.expectedLastSeatScore ? ` Expected last seat: ${previewExam.expectedLastSeatScore}.` : ''}`
+                : realExamSubs.length === 0
                 ? 'No candidate scores submitted for this test yet. Enter your obtained marks to start building the real merit pool.'
                 : `Submit your actual marks to calculate your real percentile and category rank among ${realExamSubs.length} contributing ${realExamSubs.length === 1 ? 'candidate' : 'candidates'}.`}
             </p>
@@ -220,7 +222,7 @@ export const LiveSpatialRadar: React.FC<LiveSpatialRadarProps> = ({
               <ArrowUpRight className="h-3.5 w-3.5" />
             </button>
 
-            {onOpenSubmitScore && (
+            {onOpenSubmitScore && !previewExam.isReadOnlyDemo && (
               <button
                 type="button"
                 onClick={() => onOpenSubmitScore(previewExam.id)}

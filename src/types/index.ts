@@ -116,6 +116,13 @@ export interface ExamFolder {
   followersCount: number;
   additionalNotes?: string;
   
+  // Showcase / Read-Only Benchmark mode
+  isReadOnlyDemo?: boolean;
+  lastYearLabel?: string;
+  lastYearTopScore?: number;
+  lastYearLastSeatScore?: number;
+  expectedLastSeatScore?: string;
+
   // Historical data
   historicalRecords: HistoricalComparison[];
 }

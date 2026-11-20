@@ -5,6 +5,46 @@ import { ExamFolder, ScoreSubmission, ExamReport, OfficialUpdate, ExamComment, N
 
 export const initialExams: ExamFolder[] = [
   {
+    id: 'sts-sukkur-iba-sthp-2027',
+    name: 'Sukkur IBA University — Sindh Talent Hunt Program (STHP) 2027',
+    organization: 'Sukkur IBA University & Government of Sindh',
+    testingAgency: 'STS',
+    jobPost: 'STHP 2027 Scholarship (200 Foundation / 100 Regular Seats — BBA, BS, BE, B.Ed)',
+    department: 'Sukkur IBA University — Main Campus (Merit-cum-Need Scholarship)',
+    bpsScale: 'STHP Scholarship (200 Seats)',
+    testDate: '2026-11-08',
+    totalMarks: 100,
+    passingMarks: 50,
+    negativeMarking: false,
+    testType: 'Admission Test (English, Mathematics & ICT)',
+    totalVacancies: 200,
+    quotaAllocation: {
+      openMerit: 200,
+      punjab: 0,
+      sindhUrban: 0,
+      sindhRural: 0,
+      kpk: 0,
+      balochistan: 0,
+    },
+    shortlistRatio: 'Top 200 Foundation Semester → Top 100 Regular Scholarship (min 2.2 GPA)',
+    interviewRatio: 'Test Centers: Sukkur, Hyderabad, Karachi, Mirpurkhas, Larkana, Naushahro Feroze',
+    province: 'Sindh',
+    status: 'Score Collection',
+    officialAdvertisementUrl: '/assets/aistudio/20261012052736312_d184364d.pdf',
+    officialResultUrl: 'https://applyadmission.iba-suk.edu.pk',
+    officialCutoff: null,
+    managerId: 'usr_admin_pak',
+    managerName: 'Muqabla Intelligence Team',
+    isVerified: true,
+    verificationRequested: false,
+    createdAt: '2026-11-19',
+    lastUpdated: '2026-11-19',
+    followersCount: 1,
+    additionalNotes:
+      'Sukkur IBA University in collaboration with Government of Sindh announces Sindh Talent Hunt Program (STHP) 2027. Last Date to Apply: October 29, 2026 | Admission Test: November 08, 2026. Test Centers: Sukkur, Hyderabad, Karachi, Mirpurkhas, Larkana, Naushahro Feroze. Eligibility: Intermediate or Equivalent (2024, 2025 & 2026), Sindh Province domicile, merit-cum-need basis. Foundation Semester (Top 200): English, Mathematics & ICT; 100% tuition fee waiver, free books/manuals, Rs. 5,500/month living cost + Rs. 4,000/month stipend (no hostel facility). Regular Semester (Top 100 with min 2.2 GPA): 100% admission & tuition fee waiver for 4 years (08 semesters) + Rs. 5,000/month stipend. Degree Programs: BBA, BS (Computer Science, Software Engineering, Artificial Intelligence, Accounting & Finance, Economics, Mathematics [Data Science, Actuarial & Risk Management], Physical Education & Sports Sciences, Media & Communication), BE (Computer Systems Engineering, Electrical Engineering [Power, Electronics, Telecommunication]), B.Ed. Portal: applyadmission.iba-suk.edu.pk | Criteria: iba-suk.edu.pk/admissions/announcements.',
+    historicalRecords: [],
+  },
+  {
     id: 'nts-ismo-engineer-ee-2026',
     name: 'NTS Engineer-I & Engineer-II (Electrical / Electronics) — ISMO 2026',
     organization: 'Independent System and Market Operator of Pakistan (ISMO)',
@@ -252,6 +292,11 @@ export const initialExams: ExamFolder[] = [
     lastUpdated: '2026-10-04',
     followersCount: 4281,
     additionalNotes: 'Test conducted in Lahore, Islamabad, Peshawar, Karachi, Quetta, and Multan centers. 100 MCQs covering 70% technical discipline and 30% English/Analytical/General Knowledge.',
+    isReadOnlyDemo: true,
+    lastYearLabel: '2025 Batch',
+    lastYearTopScore: 91,
+    lastYearLastSeatScore: 80,
+    expectedLastSeatScore: '76–81',
     historicalRecords: [
       {
         year: 2022,
@@ -336,6 +381,11 @@ export const initialExams: ExamFolder[] = [
     lastUpdated: '2026-10-02',
     followersCount: 12450,
     additionalNotes: 'Paper comprised 20 marks English Grammar & Usage and 80 marks General Abilities (Basic Arithmetic, Current Affairs, Pakistan Affairs, Islamic Studies, Basic Computer Science).',
+    isReadOnlyDemo: true,
+    lastYearLabel: '2025 Batch',
+    lastYearTopScore: 93,
+    lastYearLastSeatScore: 83,
+    expectedLastSeatScore: '79–84',
     historicalRecords: [
       {
         year: 2024,
@@ -392,6 +442,11 @@ export const initialExams: ExamFolder[] = [
     lastUpdated: '2026-10-03',
     followersCount: 1890,
     additionalNotes: 'Negative marking penalty of 0.25 marks per incorrect response enforced. Tough algorithm and automata theory sections reported by candidates.',
+    isReadOnlyDemo: true,
+    lastYearLabel: '2025 Batch',
+    lastYearTopScore: 81.5,
+    lastYearLastSeatScore: 63.25,
+    expectedLastSeatScore: '61–65',
     historicalRecords: [
       {
         year: 2023,
@@ -615,8 +670,77 @@ export const initialExams: ExamFolder[] = [
   },
 ];
 
-// Live candidate submissions are fetched from Supabase (zero dummy/synthetic scores)
-export const initialSubmissions: ScoreSubmission[] = [];
+// Deterministic sample score generator strictly for the 3 read-only showcase tests
+function generateShowcaseScores(
+  examId: string,
+  totalMarks: number,
+  count: number,
+  mean: number,
+  stdDev: number,
+  seedOffset: number,
+  maxCap: number,
+  provincePool?: string[]
+): ScoreSubmission[] {
+  const provinces = provincePool || ['Punjab', 'Sindh Urban', 'Sindh Rural', 'KPK', 'Balochistan', 'Islamabad', 'AJK'];
+  const quotas = ['Open Merit', 'Provincial Quota', 'Women Quota', 'Minority Quota'];
+  const firstNames = ['Muhammad', 'Ali', 'Zain', 'Hamza', 'Usman', 'Farhan', 'Bilal', 'Asad', 'Saad', 'Hassan', 'Ayesha', 'Fatima', 'Zainab', 'Maryam', 'Sana', 'Iqra'];
+  const lastNames = ['Khan', 'Ahmed', 'Malik', 'Chaudhry', 'Sheikh', 'Bhatti', 'Shah', 'Qureshi', 'Mirza', 'Raza', 'Siddiqui', 'Memon', 'Baloch', 'Abbasi'];
+
+  // Deterministic LCG PRNG so showcase numbers stay stable across reloads
+  let seed = 1337 + seedOffset * 7919;
+  const nextRand = () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+
+  const submissions: ScoreSubmission[] = [];
+
+  for (let i = 0; i < count; i++) {
+    const u1 = Math.max(0.001, nextRand());
+    const u2 = Math.max(0.001, nextRand());
+    const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+    let score = Math.round(mean + z * stdDev);
+    score = Math.max(32, Math.min(maxCap, Math.min(totalMarks, score)));
+
+    const fn = firstNames[Math.floor(nextRand() * firstNames.length)];
+    const ln = lastNames[Math.floor(nextRand() * lastNames.length)];
+    const prov = provinces[Math.floor(nextRand() * provinces.length)];
+    const quota = quotas[Math.floor(nextRand() * quotas.length)];
+    const rollDigits = Math.floor(100000 + nextRand() * 900000);
+
+    const hasProof = nextRand() > 0.4;
+    const status: ScoreSubmission['evidenceStatus'] = hasProof
+      ? (nextRand() > 0.25 ? 'Verified' : 'Evidence Submitted')
+      : 'Reported';
+
+    submissions.push({
+      id: `demo_${examId}_${i + 1}`,
+      examId,
+      userId: `usr_demo_${examId}_${i + 1}`,
+      userName: `${fn} ${ln}`,
+      marksObtained: score,
+      totalMarks,
+      percentage: Number(((score / totalMarks) * 100).toFixed(1)),
+      province: prov,
+      quota,
+      rollNumberMasked: `${String(rollDigits).slice(0, 2)}***${String(rollDigits).slice(4)}`,
+      evidenceProvided: hasProof,
+      evidenceUrl: undefined,
+      evidenceStatus: status,
+      submittedAt: `2026-09-${String(Math.floor(nextRand() * 20) + 10).padStart(2, '0')} 14:${String(Math.floor(nextRand() * 59)).padStart(2, '0')}`,
+      isFlagged: false,
+    });
+  }
+
+  return submissions;
+}
+
+// Dummy showcase data ONLY for the 3 read-only reference tests (real live posts like ISMO & STHP have zero dummy scores)
+export const initialSubmissions: ScoreSubmission[] = [
+  ...generateShowcaseScores('nts-wapda-ae-2026', 100, 160, 68.5, 10.2, 1, 92),
+  ...generateShowcaseScores('fpsc-inspector-customs-2026', 100, 210, 71.0, 9.5, 2, 94),
+  ...generateShowcaseScores('ppsc-lecturer-cs-2026', 100, 120, 56.0, 10.4, 3, 82, ['Punjab']),
+];
 
 export const initialOfficialUpdates: OfficialUpdate[] = [
   {

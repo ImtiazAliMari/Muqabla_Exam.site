@@ -192,6 +192,7 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
   };
 
   const handleSubmitScoreClick = () => {
+    if (exam.isReadOnlyDemo) return;
     if (!currentUser) {
       onOpenLogin?.();
     } else {
@@ -372,13 +373,23 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
 
           {/* Action CTAs right column */}
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0 pt-2 lg:pt-0">
-            <button
-              onClick={handleSubmitScoreClick}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-950 cursor-pointer"
-            >
-              <Award className="h-4 w-4" />
-              <span>{userSubmission ? 'Update My Score' : 'Submit My Score'}</span>
-            </button>
+            {exam.isReadOnlyDemo ? (
+              <div
+                className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg text-xs font-semibold text-amber-300 bg-amber-500/10 border border-amber-500/30 cursor-not-allowed"
+                title="Submissions are disabled for this historical sample showcase test"
+              >
+                <ShieldCheck className="h-4 w-4 text-amber-400" />
+                <span>Sample Showcase (Read-Only)</span>
+              </div>
+            ) : (
+              <button
+                onClick={handleSubmitScoreClick}
+                className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-lg text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-md shadow-emerald-950 cursor-pointer"
+              >
+                <Award className="h-4 w-4" />
+                <span>{userSubmission ? 'Update My Score' : 'Submit My Score'}</span>
+              </button>
+            )}
 
             <button
               onClick={handleToggleFollow}
@@ -650,8 +661,22 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
           </div>
         </div>
 
-        {/* If user hasn't submitted a score yet, show prompt banner */}
-        {!userSubmission && (
+        {/* If user hasn't submitted a score yet, show prompt or read-only showcase banner */}
+        {exam.isReadOnlyDemo ? (
+          <div className="my-5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold text-amber-200">
+                Sample Benchmark Showcase (Read-Only · Benchmark: {effectiveUserScore} marks)
+              </p>
+              <p className="text-xs text-amber-300/80 mt-0.5">
+                This folder demonstrates merit distribution, last year&apos;s top &amp; closing seat scores, and expected last-seat cutoffs. Score entry is closed.
+              </p>
+            </div>
+            <span className="px-3 py-1.5 text-[11px] font-semibold text-amber-300 bg-amber-950/80 border border-amber-500/30 rounded-lg whitespace-nowrap">
+              Submissions Closed
+            </span>
+          </div>
+        ) : !userSubmission && (
           <div className="my-5 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold text-amber-200">
@@ -1006,17 +1031,20 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
           <div className="grid grid-cols-2 gap-3 pt-2">
             <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
               <span className="text-[10px] uppercase tracking-wider text-slate-400 block mb-1">
-                Estimated Cutoff
+                Expected Last Seat Score
               </span>
-              {standing.estimatedCutoffMin ? (
+              {exam.expectedLastSeatScore || standing.estimatedCutoffMin ? (
                 <div className="text-2xl font-bold font-mono-numbers text-emerald-400">
-                  {standing.estimatedCutoffMin}–{standing.estimatedCutoffMax}
+                  {exam.expectedLastSeatScore
+                    ? `${exam.expectedLastSeatScore}`
+                    : `${standing.estimatedCutoffMin}–${standing.estimatedCutoffMax}`}
+                  <span className="text-xs text-slate-500 font-normal ml-1">/{exam.totalMarks}</span>
                 </div>
               ) : (
                 <span className="text-xs text-slate-500">More scores needed</span>
               )}
               <span className="text-[10px] text-slate-400 block mt-1">
-                Community estimate — not official
+                Estimated score where the last seat closes
               </span>
             </div>
 
@@ -1033,6 +1061,36 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
                 {exam.officialCutoff ? 'Announced by Commission' : 'Pending official gazette'}
               </span>
             </div>
+
+            {(exam.lastYearTopScore !== undefined || exam.lastYearLastSeatScore !== undefined) && (
+              <>
+                <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-4">
+                  <span className="text-[10px] uppercase tracking-wider text-amber-300/80 block mb-1">
+                    Last Year Top Score {exam.lastYearLabel ? `(${exam.lastYearLabel})` : ''}
+                  </span>
+                  <div className="text-2xl font-bold font-mono-numbers text-amber-300">
+                    {exam.lastYearTopScore !== undefined ? `${exam.lastYearTopScore}` : '—'}
+                    <span className="text-xs text-slate-400 font-normal ml-1">/{exam.totalMarks}</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 block mt-1">
+                    Highest written mark recorded last year
+                  </span>
+                </div>
+
+                <div className="rounded-xl border border-sky-500/25 bg-sky-500/[0.06] p-4">
+                  <span className="text-[10px] uppercase tracking-wider text-sky-300/80 block mb-1">
+                    Last Year Last Seat Score
+                  </span>
+                  <div className="text-2xl font-bold font-mono-numbers text-sky-300">
+                    {exam.lastYearLastSeatScore !== undefined ? `${exam.lastYearLastSeatScore}` : '—'}
+                    <span className="text-xs text-slate-400 font-normal ml-1">/{exam.totalMarks}</span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 block mt-1">
+                    Score at which final seat closed last year
+                  </span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Historical comparison accuracy preview */}
