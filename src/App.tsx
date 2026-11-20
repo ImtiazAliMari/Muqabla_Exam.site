@@ -141,7 +141,8 @@ export default function App() {
           const matchPost = exam.jobPost.toLowerCase().includes(q);
           const matchAgency = exam.testingAgency.toLowerCase().includes(q);
           const matchDept = (exam.department || '').toLowerCase().includes(q);
-          if (!matchName && !matchOrg && !matchPost && !matchAgency && !matchDept) return false;
+          const matchNotes = (exam.additionalNotes || '').toLowerCase().includes(q);
+          if (!matchName && !matchOrg && !matchPost && !matchAgency && !matchDept && !matchNotes) return false;
         }
 
         // Agency match
@@ -166,7 +167,8 @@ export default function App() {
         if (sortBy === 'most-active') {
           const aCount = allSubmissions.filter((s) => s.examId === a.id).length;
           const bCount = allSubmissions.filter((s) => s.examId === b.id).length;
-          return bCount - aCount;
+          if (bCount !== aCount) return bCount - aCount;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         }
         if (sortBy === 'highest-seats') {
           return (b.totalVacancies || 0) - (a.totalVacancies || 0);

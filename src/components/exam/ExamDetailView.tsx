@@ -110,14 +110,12 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
         }
       }
       if (userSub) {
-        const existingIdx = finalSubs.findIndex((s) => s.userId === userSub.userId);
-        if (existingIdx >= 0) {
-          finalSubs[existingIdx] = userSub;
-        } else {
-          finalSubs.unshift(userSub);
-        }
+        finalSubs = finalSubs.filter(
+          (s) => s.id !== userSub.id && s.userId !== userSub.userId && s.userId !== 'current_user'
+        );
+        finalSubs.unshift(userSub);
       }
-      setAllSubmissions(finalSubs.length > 0 ? finalSubs : benchmarkSubs);
+      setAllSubmissions(finalSubs);
       setComments(commentsRes.data || []);
       setOfficialUpdates(updatesRes.data || []);
       if (followedIds && Array.isArray(followedIds)) {
@@ -413,6 +411,14 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Additional Advertisement Notes / Eligibility Criteria */}
+        {exam.additionalNotes && (
+          <div className="mt-4 rounded-xl border border-sky-500/20 bg-sky-950/20 p-3.5 text-xs text-slate-300 leading-relaxed">
+            <span className="font-semibold text-sky-300 mr-1.5">Advertisement Criteria & Notes:</span>
+            {exam.additionalNotes}
+          </div>
+        )}
 
         {/* Source Attribution Classification Banner */}
         <div className="mt-6 pt-4 border-t border-slate-800/80 flex flex-wrap items-center gap-4 text-xs text-slate-400">
@@ -896,7 +902,9 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono-numbers">
                 {categorySubmissions.map((sub, index) => {
-                  const isUser = currentUser && sub.userId === currentUser.id;
+                  const isUser = Boolean(
+                    currentUser && (sub.userId === currentUser.id || sub.userId === 'current_user')
+                  );
                   const rankNumber = index + 1;
 
                   return (
@@ -1150,10 +1158,51 @@ export const ExamDetailView: React.FC<ExamDetailViewProps> = ({
             </span>
           </div>
 
+          {(exam.officialAdvertisementUrl || exam.officialAnswerKeyUrl || exam.officialResultUrl) && (
+            <div className="flex flex-wrap gap-2">
+              {exam.officialAdvertisementUrl && (
+                <a
+                  href={exam.officialAdvertisementUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-xs font-semibold text-sky-300 transition-colors"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  <span>Official Advertisement</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {exam.officialAnswerKeyUrl && (
+                <a
+                  href={exam.officialAnswerKeyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-semibold text-emerald-300 transition-colors"
+                >
+                  <span>Answer Key</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {exam.officialResultUrl && (
+                <a
+                  href={exam.officialResultUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-xs font-semibold text-emerald-300 transition-colors"
+                >
+                  <span>Testing Agency Portal ({exam.testingAgency})</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
+          )}
+
           {officialUpdates.length === 0 ? (
-            <p className="text-xs text-slate-500 py-4 text-center">
-              No official documents released yet.
-            </p>
+            !exam.officialAdvertisementUrl && !exam.officialResultUrl && (
+              <p className="text-xs text-slate-500 py-4 text-center">
+                No official documents released yet.
+              </p>
+            )
           ) : (
             <div className="space-y-3">
               {officialUpdates.map((upd) => (

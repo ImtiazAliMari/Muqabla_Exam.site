@@ -95,7 +95,7 @@ export const ScoreSubmissionModal: React.FC<ScoreSubmissionModalProps> = ({
 
     // Validate using anti-fraud heuristic against existing Supabase submissions
     const otherSubmissions = existingExamSubs.filter(
-      (s) => !(s.examId === exam.id && s.userId === currentUser.id)
+      (s) => !(s.examId === exam.id && (s.userId === currentUser.id || s.userId === 'current_user'))
     );
 
     const isUpdate = Boolean(existingSubId);

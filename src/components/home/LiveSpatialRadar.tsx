@@ -44,99 +44,28 @@ export const LiveSpatialRadar: React.FC<LiveSpatialRadarProps> = ({
   onOpenSubmitScore,
   className = '',
 }) => {
-  // Compute standings for each exam entry
+  // Compute standings strictly from user's real submissions
   const examRecords: ExamStandingRecord[] = useMemo(() => {
-    // 1. If candidate has submitted actual marks, compute for all their submissions
-    if (userSubmissions && userSubmissions.length > 0) {
-      const realRecords: ExamStandingRecord[] = [];
-
-      for (const sub of userSubmissions) {
-        const exam = allExams.find((e) => e.id === sub.examId);
-        if (!exam) continue;
-
-        const examSubs = allSubmissions.filter((s) => s.examId === exam.id);
-        const standing = calculateCompetitiveStanding(
-          sub.marksObtained,
-          exam,
-          examSubs,
-          sub.province,
-          sub.quota
-        );
-
-        // Calculate chance score: weighs shortlist calling confidence, percentile, and safe cutoff margin
-        let confWeight = 20;
-        if (standing.callingConfidence === 'Very High') confWeight = 100;
-        else if (standing.callingConfidence === 'High') confWeight = 80;
-        else if (standing.callingConfidence === 'Moderate') confWeight = 60;
-        else if (standing.callingConfidence === 'Low') confWeight = 40;
-
-        const effPercentile = standing.quotaPercentile ?? standing.percentile;
-        const safeMargin = standing.estimatedCutoffMin
-          ? Number((sub.marksObtained - standing.estimatedCutoffMin).toFixed(1))
-          : null;
-
-        const marginBonus = safeMargin !== null ? Math.max(0, safeMargin * 3) : 0;
-        const chanceScore = confWeight * 0.45 + effPercentile * 0.4 + marginBonus * 0.15;
-
-        realRecords.push({
-          exam,
-          submission: sub,
-          standing,
-          isReal: true,
-          chanceScore,
-          safeMargin,
-        });
-      }
-
-      if (realRecords.length > 0) {
-        // Sort descending so the exam with MORE CHANCES is index 0
-        realRecords.sort((a, b) => b.chanceScore - a.chanceScore);
-        realRecords[0].isBestChance = true;
-        return realRecords;
-      }
+    if (!userSubmissions || userSubmissions.length === 0) {
+      return [];
     }
 
-    // 2. Demonstration mode if user has no submissions yet:
-    // Pick 3 diverse popular exams to demonstrate multi-exam selection & best-chance detection
-    const demoSpecs = [
-      { marks: 86, prov: 'Punjab', quota: 'Open Merit' },
-      { marks: 78, prov: 'Punjab', quota: 'Open Merit' },
-      { marks: 71, prov: 'Sindh Urban', quota: 'Open Merit' },
-    ];
+    const realRecords: ExamStandingRecord[] = [];
 
-    const demoRecords: ExamStandingRecord[] = [];
-    const availableExams = allExams.slice(0, 3);
+    for (const sub of userSubmissions) {
+      const exam = allExams.find((e) => e.id === sub.examId);
+      if (!exam) continue;
 
-    availableExams.forEach((exam, idx) => {
-      const spec = demoSpecs[idx] || demoSpecs[0];
       const examSubs = allSubmissions.filter((s) => s.examId === exam.id);
-      const marksObtained = Math.min(exam.totalMarks, spec.marks);
-
-      const fakeSub: ScoreSubmission = {
-        id: `demo-sub-${exam.id}`,
-        examId: exam.id,
-        userId: currentUser?.id || 'demo-user',
-        userName: currentUser?.name || 'Candidate Preview',
-        marksObtained,
-        totalMarks: exam.totalMarks,
-        percentage: Number(((marksObtained / exam.totalMarks) * 100).toFixed(1)),
-        province: spec.prov,
-        quota: spec.quota,
-        evidenceProvided: true,
-        evidenceStatus: 'Verified',
-        submittedAt: new Date().toISOString(),
-        isFlagged: false,
-      };
-
       const standing = calculateCompetitiveStanding(
-        marksObtained,
+        sub.marksObtained,
         exam,
         examSubs,
-        spec.prov,
-        spec.quota
+        sub.province,
+        sub.quota
       );
 
-      let confWeight = 50;
+      let confWeight = 20;
       if (standing.callingConfidence === 'Very High') confWeight = 100;
       else if (standing.callingConfidence === 'High') confWeight = 80;
       else if (standing.callingConfidence === 'Moderate') confWeight = 60;
@@ -144,32 +73,33 @@ export const LiveSpatialRadar: React.FC<LiveSpatialRadarProps> = ({
 
       const effPercentile = standing.quotaPercentile ?? standing.percentile;
       const safeMargin = standing.estimatedCutoffMin
-        ? Number((marksObtained - standing.estimatedCutoffMin).toFixed(1))
+        ? Number((sub.marksObtained - standing.estimatedCutoffMin).toFixed(1))
         : null;
 
       const marginBonus = safeMargin !== null ? Math.max(0, safeMargin * 3) : 0;
       const chanceScore = confWeight * 0.45 + effPercentile * 0.4 + marginBonus * 0.15;
 
-      demoRecords.push({
+      realRecords.push({
         exam,
-        submission: fakeSub,
+        submission: sub,
         standing,
-        isReal: false,
+        isReal: true,
         chanceScore,
         safeMargin,
       });
-    });
-
-    demoRecords.sort((a, b) => b.chanceScore - a.chanceScore);
-    if (demoRecords.length > 0) {
-      demoRecords[0].isBestChance = true;
     }
-    return demoRecords;
-  }, [allExams, allSubmissions, userSubmissions, currentUser]);
+
+    if (realRecords.length > 0) {
+      realRecords.sort((a, b) => b.chanceScore - a.chanceScore);
+      realRecords[0].isBestChance = true;
+    }
+    return realRecords;
+  }, [allExams, allSubmissions, userSubmissions]);
 
   // Selected exam for the radar view (defaults to the exam with HIGHEST CHANCES)
   const bestChanceRecord = examRecords[0] || null;
   const [selectedExamId, setSelectedExamId] = useState<string>('');
+  const [previewExamId, setPreviewExamId] = useState<string>('');
 
   // Auto-select the best chance exam whenever records change or on initial load
   useEffect(() => {
@@ -178,6 +108,12 @@ export const LiveSpatialRadar: React.FC<LiveSpatialRadarProps> = ({
     }
   }, [bestChanceRecord?.exam.id]);
 
+  useEffect(() => {
+    if (!previewExamId && allExams.length > 0) {
+      setPreviewExamId(allExams[0].id);
+    }
+  }, [allExams, previewExamId]);
+
   // Currently active record to display
   const activeRecord = useMemo(() => {
     if (!examRecords || examRecords.length === 0) return null;
@@ -185,7 +121,119 @@ export const LiveSpatialRadar: React.FC<LiveSpatialRadarProps> = ({
   }, [examRecords, selectedExamId]);
 
   if (!activeRecord) {
-    return null;
+    const previewExam = allExams.find((e) => e.id === previewExamId) || allExams[0];
+    if (!previewExam) return null;
+
+    const realExamSubs = allSubmissions.filter(
+      (s) => s.examId === previewExam.id && s.evidenceStatus !== 'Rejected'
+    );
+    const highestRealScore =
+      realExamSubs.length > 0 ? Math.max(...realExamSubs.map((s) => s.marksObtained)) : null;
+
+    return (
+      <div className={`relative group perspective-[1000px] ${className}`}>
+        <div
+          aria-hidden="true"
+          className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent blur-xl opacity-80 group-hover:opacity-100 transition-opacity"
+        />
+
+        <div className="relative rounded-3xl border border-white/15 bg-slate-900/60 p-5 sm:p-7 backdrop-blur-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)] ring-1 ring-white/10 space-y-5">
+          <div className="flex items-center justify-between pb-3.5 border-b border-white/10">
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-widest text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              Live Spatial Radar
+            </span>
+            <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/15 text-slate-300 text-[10px] font-semibold">
+              <Sparkles className="h-3 w-3 text-emerald-400" />
+              <span>Real Candidate Data</span>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="radar-preview-select" className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+              <Layers className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Select Test to Check Live Merit Pool:</span>
+            </label>
+            <div className="relative">
+              <select
+                id="radar-preview-select"
+                value={previewExam.id}
+                onChange={(e) => setPreviewExamId(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-white/15 bg-slate-950/90 pl-3.5 pr-9 py-2.5 text-xs font-semibold text-white focus:border-emerald-400/80 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none transition-all cursor-pointer shadow-inner"
+              >
+                {allExams.map((ex) => {
+                  const cnt = allSubmissions.filter((s) => s.examId === ex.id).length;
+                  return (
+                    <option key={ex.id} value={ex.id} className="bg-slate-900 text-white py-1">
+                      {ex.name} ({cnt} {cnt === 1 ? 'submission' : 'submissions'})
+                    </option>
+                  );
+                })}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-3 h-4 w-4 text-slate-400" />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-white line-clamp-1">{previewExam.name}</span>
+              <span className="text-[10px] font-mono text-emerald-400 shrink-0 ml-2">
+                {previewExam.testingAgency}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-xs">
+              <div className="p-2.5 rounded-xl border border-white/10 bg-white/[0.03]">
+                <span className="text-[10px] text-slate-400 block">Real Submissions</span>
+                <span className="font-mono font-bold text-white text-sm mt-0.5 block">
+                  {realExamSubs.length}
+                </span>
+              </div>
+              <div className="p-2.5 rounded-xl border border-white/10 bg-white/[0.03]">
+                <span className="text-[10px] text-slate-400 block">Official Seats</span>
+                <span className="font-mono font-bold text-teal-300 text-sm mt-0.5 block">
+                  {previewExam.totalVacancies || '—'}
+                </span>
+              </div>
+              <div className="p-2.5 rounded-xl border border-white/10 bg-white/[0.03]">
+                <span className="text-[10px] text-slate-400 block">Highest Marks</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm mt-0.5 block">
+                  {highestRealScore !== null ? `${highestRealScore}/${previewExam.totalMarks}` : 'Awaiting'}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              {realExamSubs.length === 0
+                ? 'No candidate scores submitted for this test yet. Enter your obtained marks to start building the real merit pool.'
+                : `Submit your actual marks to calculate your real percentile and category rank among ${realExamSubs.length} contributing ${realExamSubs.length === 1 ? 'candidate' : 'candidates'}.`}
+            </p>
+          </div>
+
+          <div className="pt-1 flex flex-col sm:flex-row gap-2">
+            <button
+              type="button"
+              onClick={() => onSelectExam(previewExam.id)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-colors cursor-pointer shadow-md shadow-emerald-950/40"
+            >
+              <span>Inspect Merit & Cutoffs</span>
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
+
+            {onOpenSubmitScore && (
+              <button
+                type="button"
+                onClick={() => onOpenSubmitScore(previewExam.id)}
+                className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+              >
+                <Plus className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Enter My Marks</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const { exam, submission, standing, isReal, safeMargin } = activeRecord;

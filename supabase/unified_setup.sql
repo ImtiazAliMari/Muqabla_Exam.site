@@ -460,6 +460,71 @@ END $$;
 INSERT INTO public.exams (id, title, category, agency, conducted_date, expected_result_date, status, description, total_marks, negative_marking, total_vacancies)
 VALUES 
 (
+    'nts-ismo-engineer-ee-2026',
+    'NTS Engineer-I & Engineer-II (Electrical / Electronics) — ISMO 2026',
+    'Power System Operations & Electrical Engineering',
+    'NTS',
+    '2026-11-15',
+    '2026-11-19',
+    'Verified',
+    'Independent System and Market Operator of Pakistan (ISMO) — 60 Combined Engineer-I & Engineer-II (Electrical/Electronics) positions via NTS.',
+    100,
+    0,
+    60
+),
+(
+    'nts-ismo-senior-engineer-2026',
+    'NTS Senior Engineer (5+ Years Exp) — ISMO 2026',
+    'Senior Power Engineering (PEC)',
+    'NTS',
+    '2026-11-15',
+    '2026-11-19',
+    'Verified',
+    'Independent System and Market Operator of Pakistan (ISMO) — 29 Senior Engineer positions via NTS.',
+    100,
+    0,
+    29
+),
+(
+    'nts-ismo-it-cadre-2026',
+    'NTS IT Support, Analyst IT, System/Network Admin & QA Engineer — ISMO 2026',
+    'IT & Cyber Security Cadre',
+    'NTS',
+    '2026-11-15',
+    '2026-11-19',
+    'Verified',
+    'Independent System and Market Operator of Pakistan (ISMO) — 11 IT & Computing positions via NTS.',
+    100,
+    0,
+    11
+),
+(
+    'nts-ismo-finance-tariff-2026',
+    'NTS Finance, Tariff Analysis, Internal Audit & Sales Tax — ISMO 2026',
+    'Finance, Regulatory & Tariff Modelling',
+    'NTS',
+    '2026-11-15',
+    '2026-11-19',
+    'Verified',
+    'Independent System and Market Operator of Pakistan (ISMO) — 10 Finance & Tariff positions via NTS.',
+    100,
+    0,
+    10
+),
+(
+    'nts-ismo-corporate-admin-2026',
+    'NTS Executive Assistant, Analyst (HR/Legal/Corp Affairs) & Medical Officer — ISMO 2026',
+    'Corporate Affairs, HR, Legal & Medical',
+    'NTS',
+    '2026-11-15',
+    '2026-11-19',
+    'Verified',
+    'Independent System and Market Operator of Pakistan (ISMO) — 12 Corporate, HR, Legal, Executive Assistant & Medical Officer positions via NTS.',
+    100,
+    0,
+    12
+),
+(
     'nts-wapda-ae-2026',
     'NTS Assistant Engineer (BPS-17) — WAPDA 2026',
     'Engineering & Technical Posts',

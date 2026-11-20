@@ -5,6 +5,210 @@ import { ExamFolder, ScoreSubmission, ExamReport, OfficialUpdate, ExamComment, N
 
 export const initialExams: ExamFolder[] = [
   {
+    id: 'nts-ismo-engineer-ee-2026',
+    name: 'NTS Engineer-I & Engineer-II (Electrical / Electronics) — ISMO 2026',
+    organization: 'Independent System and Market Operator of Pakistan (ISMO)',
+    testingAgency: 'NTS',
+    jobPost: 'Engineer-II (Electrical/Electronics) & Engineer-I (Electrical/Electronics)',
+    department: 'Power System Operations, Planning & Electricity Market Operations (Govt SOE)',
+    bpsScale: 'SOE Contract (60 Seats)',
+    testDate: '2026-11-15',
+    resultDate: '2026-11-19',
+    totalMarks: 100,
+    passingMarks: 50,
+    negativeMarking: false,
+    testType: 'NTS Written Screening Test (Biometric Verified)',
+    totalVacancies: 60,
+    quotaAllocation: {
+      openMerit: 12,
+      punjab: 24,
+      sindhUrban: 5,
+      sindhRural: 7,
+      kpk: 6,
+      balochistan: 3,
+      exFata: 1,
+      ajkGb: 2,
+      womenQuota: 6,
+      minorityQuota: 3,
+    },
+    shortlistRatio: '1:5 (Shortlisted candidates called for ISMO interview)',
+    interviewRatio: 'Biometric verification via NADRA conducted at NTS Test Centers',
+    province: 'All Pakistan / Federal',
+    status: 'Score Collection',
+    officialAdvertisementUrl: '/assets/aistudio/ISMO_Ad_3d4d48f3.pdf',
+    officialResultUrl: 'https://www.nts.org.pk',
+    officialCutoff: null,
+    managerId: 'usr_admin_pak',
+    managerName: 'Muqabla Intelligence Team',
+    isVerified: true,
+    verificationRequested: false,
+    createdAt: '2026-11-19',
+    lastUpdated: '2026-11-19',
+    followersCount: 3840,
+    additionalNotes: 'ISMO Career Opportunities (60 Combined Positions for Engineer-I & Engineer-II Electrical/Electronics). Qualification: Min 4-year Bachelor in Electrical/Electronics Engineering (HEC) with valid PEC registration. Age limit: 30 yrs (Engineer-II, min 2 yrs exp) / 28 yrs (Engineer-I, relevant exp preferred). Application deadline: 08.10.2026 via NTS (051-8444441). NADRA biometric verification mandatory at test centers.',
+    historicalRecords: [],
+  },
+  {
+    id: 'nts-ismo-senior-engineer-2026',
+    name: 'NTS Senior Engineer (5+ Years Exp) — ISMO 2026',
+    organization: 'Independent System and Market Operator of Pakistan (ISMO)',
+    testingAgency: 'NTS',
+    jobPost: 'Senior Engineer (Power System Operations & Grid Planning)',
+    department: 'Power System Operations & Market Operations (Govt SOE)',
+    bpsScale: 'SOE Senior Scale (29 Seats)',
+    testDate: '2026-11-15',
+    resultDate: '2026-11-19',
+    totalMarks: 100,
+    passingMarks: 50,
+    negativeMarking: false,
+    testType: 'NTS Written Screening Test (Biometric Verified)',
+    totalVacancies: 29,
+    quotaAllocation: {
+      openMerit: 6,
+      punjab: 12,
+      sindhUrban: 2,
+      sindhRural: 3,
+      kpk: 3,
+      balochistan: 2,
+      exFata: 0,
+      ajkGb: 1,
+      womenQuota: 3,
+      minorityQuota: 1,
+    },
+    shortlistRatio: '1:5 (Shortlisted candidates called for interview)',
+    province: 'All Pakistan / Federal',
+    status: 'Score Collection',
+    officialAdvertisementUrl: '/assets/aistudio/ISMO_Ad_3d4d48f3.pdf',
+    officialResultUrl: 'https://www.nts.org.pk',
+    officialCutoff: null,
+    managerId: 'usr_admin_pak',
+    managerName: 'Muqabla Intelligence Team',
+    isVerified: true,
+    verificationRequested: false,
+    createdAt: '2026-11-19',
+    lastUpdated: '2026-11-19',
+    followersCount: 1640,
+    additionalNotes: '29 Positions. Qualification: Min 4-year Bachelor in Engineering from HEC-recognized university with PEC Registration. Age limit: 35 years. Experience: Minimum 05 years of post-qualification relevant experience. Conducted through NTS (www.nts.org.pk).',
+    historicalRecords: [],
+  },
+  {
+    id: 'nts-ismo-it-cadre-2026',
+    name: 'NTS IT Support, Analyst IT, System/Network Admin & QA Engineer — ISMO 2026',
+    organization: 'Independent System and Market Operator of Pakistan (ISMO)',
+    testingAgency: 'NTS',
+    jobPost: 'IT Support (04), Analyst-I/II IT (03), System Admin, Network Admin, QA Engineer, Sr. Analyst (IT Governance)',
+    department: 'Information Technology & Cyber Security Division (Govt SOE)',
+    bpsScale: 'SOE IT Cadre (11 Seats)',
+    testDate: '2026-11-15',
+    resultDate: '2026-11-19',
+    totalMarks: 100,
+    passingMarks: 50,
+    negativeMarking: false,
+    testType: 'NTS Written Screening Test (Biometric Verified)',
+    totalVacancies: 11,
+    quotaAllocation: {
+      openMerit: 3,
+      punjab: 4,
+      sindhUrban: 1,
+      sindhRural: 1,
+      kpk: 1,
+      balochistan: 1,
+    },
+    shortlistRatio: '1:5 for Interview',
+    province: 'All Pakistan / Federal',
+    status: 'Score Collection',
+    officialAdvertisementUrl: '/assets/aistudio/ISMO_Ad_3d4d48f3.pdf',
+    officialResultUrl: 'https://www.nts.org.pk',
+    officialCutoff: null,
+    managerId: 'usr_admin_pak',
+    managerName: 'Muqabla Intelligence Team',
+    isVerified: true,
+    verificationRequested: false,
+    createdAt: '2026-11-19',
+    lastUpdated: '2026-11-19',
+    followersCount: 1290,
+    additionalNotes: 'Covers 11 ISMO IT positions: IT Support (04, 35 yrs, 5 yrs exp), System Administrator (01, 35 yrs, 5 yrs exp), Network Administrator (01, 35 yrs, 5 yrs exp), QA Engineer (01, 35 yrs, 5 yrs exp), Senior Analyst IT Governance & Compliance (01, 35 yrs, 5 yrs exp), Analyst-II IT (30 yrs, 2 yrs exp) & Analyst-I IT (28 yrs) (03 combined). Qualification: 4-yr BS / Master in CS, IT, SE, Cyber Security or Computer Engineering.',
+    historicalRecords: [],
+  },
+  {
+    id: 'nts-ismo-finance-tariff-2026',
+    name: 'NTS Finance, Tariff Analysis, Internal Audit & Sales Tax — ISMO 2026',
+    organization: 'Independent System and Market Operator of Pakistan (ISMO)',
+    testingAgency: 'NTS',
+    jobPost: 'Asst. Manager (Business Finance 03, Sales Tax 01), Sr. Analyst Tariff (01), Analyst-I/II Finance/Audit/Market Finance (05)',
+    department: 'Finance, Regulatory Affairs & Tariff Modelling (Govt SOE)',
+    bpsScale: 'SOE Finance Cadre (10 Seats)',
+    testDate: '2026-11-15',
+    resultDate: '2026-11-19',
+    totalMarks: 100,
+    passingMarks: 50,
+    negativeMarking: false,
+    testType: 'NTS Written Screening Test (Biometric Verified)',
+    totalVacancies: 10,
+    quotaAllocation: {
+      openMerit: 3,
+      punjab: 4,
+      sindhUrban: 1,
+      sindhRural: 1,
+      kpk: 1,
+      balochistan: 0,
+    },
+    shortlistRatio: '1:5 for Interview',
+    province: 'All Pakistan / Federal',
+    status: 'Score Collection',
+    officialAdvertisementUrl: '/assets/aistudio/ISMO_Ad_3d4d48f3.pdf',
+    officialResultUrl: 'https://www.nts.org.pk',
+    officialCutoff: null,
+    managerId: 'usr_admin_pak',
+    managerName: 'Muqabla Intelligence Team',
+    isVerified: true,
+    verificationRequested: false,
+    createdAt: '2026-11-19',
+    lastUpdated: '2026-11-19',
+    followersCount: 980,
+    additionalNotes: 'Covers 10 ISMO Finance positions: Assistant Manager Business/Regulatory Finance & Accounts (03), Assistant Manager Sales Tax (01), Senior Analyst Tariff Analysis & Financial Modelling (01), Analyst-II & Analyst-I Finance / Internal Audit / Tariff Analysis & Market Finance (05 combined). Qualification: 4-yr BS / Master in Finance, CA, ACMA, ACCA, ICMA Inter.',
+    historicalRecords: [],
+  },
+  {
+    id: 'nts-ismo-corporate-admin-2026',
+    name: 'NTS Executive Assistant, Analyst (HR/Legal/Corp Affairs) & Medical Officer — ISMO 2026',
+    organization: 'Independent System and Market Operator of Pakistan (ISMO)',
+    testingAgency: 'NTS',
+    jobPost: 'Executive Assistant (03), Analyst-I/II HR (02), Legal (02), Corp Affairs (02), Corp Comm (02), Medical Officer (01)',
+    department: 'HR, Legal, Corporate Communication & General Administration (Govt SOE)',
+    bpsScale: 'SOE Admin & Corp Cadre (12 Seats)',
+    testDate: '2026-11-15',
+    resultDate: '2026-11-19',
+    totalMarks: 100,
+    passingMarks: 50,
+    negativeMarking: false,
+    testType: 'NTS Written Screening Test (Biometric Verified)',
+    totalVacancies: 12,
+    quotaAllocation: {
+      openMerit: 3,
+      punjab: 5,
+      sindhUrban: 1,
+      sindhRural: 1,
+      kpk: 1,
+      balochistan: 1,
+    },
+    shortlistRatio: '1:5 for Interview',
+    province: 'All Pakistan / Federal',
+    status: 'Score Collection',
+    officialAdvertisementUrl: '/assets/aistudio/ISMO_Ad_3d4d48f3.pdf',
+    officialResultUrl: 'https://www.nts.org.pk',
+    officialCutoff: null,
+    managerId: 'usr_admin_pak',
+    managerName: 'Muqabla Intelligence Team',
+    isVerified: true,
+    verificationRequested: false,
+    createdAt: '2026-11-19',
+    lastUpdated: '2026-11-19',
+    followersCount: 1120,
+    additionalNotes: 'Covers 12 ISMO Corporate & Admin positions: Executive Assistant (03, 28 yrs), Analyst-II/I HR (02), Analyst-II/I Legal (02, LLB), Analyst-II/I Corporate Affairs (02), Senior Analyst Corporate Communication (01, 35 yrs), Analyst-II/I Corporate Communication (01), Medical Officer (01, 28 yrs, MBBS + Valid PMDC).',
+    historicalRecords: [],
+  },
+  {
     id: 'nts-wapda-ae-2026',
     name: 'NTS Assistant Engineer (BPS-17) — WAPDA 2026',
     organization: 'Water and Power Development Authority (WAPDA)',
@@ -411,152 +615,8 @@ export const initialExams: ExamFolder[] = [
   },
 ];
 
-// Helper to generate realistic bell curve submissions
-function generateSampleScores(
-  examId: string,
-  totalMarks: number,
-  count: number,
-  mean: number,
-  stdDev: number
-): ScoreSubmission[] {
-  const provinces = ['Punjab', 'Sindh Urban', 'Sindh Rural', 'KPK', 'Balochistan', 'Islamabad', 'AJK'];
-  const quotas = ['Open Merit', 'Provincial Quota', 'Women Quota', 'Minority Quota'];
-  const firstNames = ['Muhammad', 'Ali', 'Zain', 'Hamza', 'Usman', 'Farhan', 'Bilal', 'Asad', 'Saad', 'Hassan', 'Ayesha', 'Fatima', 'Zainab', 'Maryam', 'Sana', 'Iqra'];
-  const lastNames = ['Khan', 'Ahmed', 'Malik', 'Chaudhry', 'Sheikh', 'Bhatti', 'Shah', 'Qureshi', 'Mirza', 'Raza', 'Siddiqui', 'Memon', 'Baloch', 'Abbasi'];
-
-  const submissions: ScoreSubmission[] = [];
-
-  for (let i = 0; i < count; i++) {
-    // Box-Muller normal distribution
-    const u1 = Math.random() || 0.001;
-    const u2 = Math.random() || 0.001;
-    const z = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
-    let score = Math.round(mean + z * stdDev);
-    score = Math.max(25, Math.min(totalMarks, score));
-
-    const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
-    const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const prov = provinces[Math.floor(Math.random() * provinces.length)];
-    const quota = quotas[Math.floor(Math.random() * quotas.length)];
-    const rollDigits = Math.floor(100000 + Math.random() * 900000);
-
-    const hasProof = Math.random() > 0.45;
-    const status: ScoreSubmission['evidenceStatus'] = hasProof
-      ? (Math.random() > 0.2 ? 'Verified' : 'Evidence Submitted')
-      : 'Reported';
-
-    submissions.push({
-      id: `sub_${examId}_${i + 1}`,
-      examId,
-      userId: `usr_gen_${examId}_${i + 1}`,
-      userName: `${fn} ${ln}`,
-      marksObtained: score,
-      totalMarks,
-      percentage: Number(((score / totalMarks) * 100).toFixed(1)),
-      province: prov,
-      quota,
-      rollNumberMasked: `${String(rollDigits).slice(0, 2)}***${String(rollDigits).slice(4)}`,
-      evidenceProvided: hasProof,
-      evidenceUrl: hasProof ? 'https://muqabla.pk/evidence/verified-slip-preview.pdf' : undefined,
-      evidenceStatus: status,
-      submittedAt: `2026-09-${String(Math.floor(Math.random() * 20) + 10).padStart(2, '0')} 14:${String(Math.floor(Math.random() * 59)).padStart(2, '0')}`,
-      isFlagged: false,
-    });
-  }
-
-  return submissions;
-}
-
-// Generate rich pools
-export const initialSubmissions: ScoreSubmission[] = [
-  // User's own submission for NTS WAPDA: 78 / 100
-  {
-    id: 'sub_user_nts_wapda',
-    examId: 'nts-wapda-ae-2026',
-    userId: 'usr_ahmed_khan',
-    userName: 'Ahmed Tariq Khan (You)',
-    marksObtained: 78,
-    totalMarks: 100,
-    percentage: 78.0,
-    province: 'Punjab',
-    quota: 'Open Merit / Punjab',
-    rollNumberMasked: '24***89',
-    evidenceProvided: true,
-    evidenceUrl: 'https://muqabla.pk/evidence/ahmed_nts_scorecard.pdf',
-    evidenceStatus: 'Verified',
-    userComments: 'NTS official score card verified. Technical section was mostly electrical machine concepts.',
-    submittedAt: '2026-10-02 11:24',
-    isFlagged: false,
-  },
-  // User's own submission for FPSC Customs: 82 / 100
-  {
-    id: 'sub_user_fpsc_customs',
-    examId: 'fpsc-inspector-customs-2026',
-    userId: 'usr_ahmed_khan',
-    userName: 'Ahmed Tariq Khan (You)',
-    marksObtained: 82,
-    totalMarks: 100,
-    percentage: 82.0,
-    province: 'Punjab',
-    quota: 'Punjab General Quota',
-    rollNumberMasked: '91***43',
-    evidenceProvided: true,
-    evidenceUrl: 'https://muqabla.pk/evidence/ahmed_fpsc_slip.pdf',
-    evidenceStatus: 'Verified',
-    userComments: 'FPSC website provisional marks verified.',
-    submittedAt: '2026-09-24 16:15',
-    isFlagged: false,
-  },
-  // Suspicious submission for admin moderation demo
-  {
-    id: 'sub_suspicious_demo_1',
-    examId: 'nts-wapda-ae-2026',
-    userId: 'usr_sketchy_99',
-    userName: 'Anonymous Candidate 99',
-    marksObtained: 99,
-    totalMarks: 100,
-    percentage: 99.0,
-    province: 'Punjab',
-    quota: 'Open Merit',
-    rollNumberMasked: '99***99',
-    evidenceProvided: false,
-    evidenceStatus: 'Suspicious',
-    userComments: 'Claiming 99 out of 100 without scorecard.',
-    submittedAt: '2026-10-04 09:12',
-    isFlagged: true,
-    flagReason: 'Statistical outlier (Z-score 3.9). Perfect score claimed without verifiable score sheet.',
-  },
-  {
-    id: 'sub_suspicious_demo_2',
-    examId: 'ppsc-lecturer-cs-2026',
-    userId: 'usr_bot_auto',
-    userName: 'Quick User Test',
-    marksObtained: 98,
-    totalMarks: 100,
-    percentage: 98.0,
-    province: 'Punjab',
-    quota: 'Open Merit',
-    rollNumberMasked: '11***11',
-    evidenceProvided: false,
-    evidenceStatus: 'Suspicious',
-    userComments: 'Test submission',
-    submittedAt: '2026-10-04 22:45',
-    isFlagged: true,
-    flagReason: 'Unusually high score in negative marking test (0.25 penalty). Flagged for Admin review.',
-  },
-  // Pre-seed 320 submissions for NTS WAPDA
-  ...generateSampleScores('nts-wapda-ae-2026', 100, 310, 64.8, 10.2),
-  // Pre-seed 450 submissions for FPSC Inspector Customs
-  ...generateSampleScores('fpsc-inspector-customs-2026', 100, 420, 69.4, 9.1),
-  // Pre-seed 180 submissions for PPSC Lecturer
-  ...generateSampleScores('ppsc-lecturer-cs-2026', 100, 180, 56.2, 11.5),
-  // Pre-seed 160 submissions for SPSC AD
-  ...generateSampleScores('spsc-ad-anticorruption-2026', 100, 160, 61.5, 8.8),
-  // Pre-seed 220 submissions for STS IBA JEST
-  ...generateSampleScores('sts-iba-jest-2026', 100, 220, 52.0, 7.5),
-  // Pre-seed 12 submissions for KPPSC ASI (small sample to demonstrate "Insufficient data / Low confidence" rule!)
-  ...generateSampleScores('kppsc-asi-police-2026', 100, 12, 58.0, 9.0),
-];
+// Live candidate submissions are fetched from Supabase (zero dummy/synthetic scores)
+export const initialSubmissions: ScoreSubmission[] = [];
 
 export const initialOfficialUpdates: OfficialUpdate[] = [
   {

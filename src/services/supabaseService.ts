@@ -262,6 +262,20 @@ function saveSessionScore(sub: ScoreSubmission) {
   }
 }
 
+function removeSessionScore(examId: string, userId: string) {
+  try {
+    const filtered = getSessionScores().filter(
+      (s) => !(s.examId === examId && (s.userId === userId || s.userId === 'current_user'))
+    );
+    memoryScores = filtered;
+    const json = JSON.stringify(filtered);
+    try { localStorage.setItem(SCORE_STORAGE_KEY, json); } catch {}
+    try { sessionStorage.setItem(SCORE_STORAGE_KEY, json); } catch {}
+  } catch {
+    // Fallback silently
+  }
+}
+
 async function ensureDependenciesExist(
   examId: string,
   candidateId: string,
@@ -318,6 +332,13 @@ export const scoreService = {
    */
   async getScoresByExam(examId: string): Promise<{ data: ScoreSubmission[]; error?: string }> {
     const sessionScores = getSessionScores().filter((s) => s.examId === examId);
+    let authUserId = '';
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      authUserId = authData?.user?.id || '';
+    } catch {
+      // Unauthenticated visitor
+    }
 
     const { data, error } = await supabase
       .from('public_scores')
@@ -326,7 +347,7 @@ export const scoreService = {
       .order('obtained_marks', { ascending: false });
 
     if (error || !data || data.length === 0) {
-      // If public_scores view is not available, try direct scores table
+      // If public_scores view is not available or returned 0 rows, try direct scores table
       try {
         const { data: directData } = await supabase
           .from('scores')
@@ -353,7 +374,11 @@ export const scoreService = {
           }));
 
           for (const sub of sessionScores) {
-            if (!directSubs.some((s) => s.userId === sub.userId)) {
+            if (
+              !directSubs.some(
+                (s) => s.id === sub.id || s.userId === sub.userId || s.userId === 'current_user'
+              )
+            ) {
               directSubs.push(sub);
             }
           }
@@ -363,7 +388,7 @@ export const scoreService = {
         // Table unmigrated
       }
 
-      // Merge benchmark initialSubmissions with candidate's submitted scores
+      // Return only real session scores (and any explicitly seeded initialSubmissions if present)
       const benchmarkSubs = initialSubmissions.filter((s) => s.examId === examId);
       const merged: ScoreSubmission[] = [...sessionScores];
       for (const b of benchmarkSubs) {
@@ -377,7 +402,7 @@ export const scoreService = {
     const submissions: ScoreSubmission[] = (data || []).map((row) => ({
       id: row.id,
       examId: row.exam_id,
-      userId: row.is_own ? 'current_user' : '',
+      userId: row.candidate_id || (row.is_own ? (authUserId || 'current_user') : ''),
       userName: row.candidate_name,
       marksObtained: Number(row.obtained_marks),
       totalMarks: Number(row.total_marks),
@@ -392,12 +417,14 @@ export const scoreService = {
       flagReason: undefined,
     }));
 
-    // Merge in-session submissions if any
+    // Merge fallback session submissions only if not already present in Supabase result
     for (const sub of sessionScores) {
-      const existing = submissions.findIndex(s => s.userId === sub.userId || s.id === sub.id);
-      if (existing >= 0) {
-        submissions[existing] = sub;
-      } else {
+      const alreadyInDb = submissions.some(
+        (s) =>
+          s.id === sub.id ||
+          (s.userId && (s.userId === sub.userId || s.userId === 'current_user'))
+      );
+      if (!alreadyInDb) {
         submissions.push(sub);
       }
     }
@@ -411,6 +438,13 @@ export const scoreService = {
    */
   async getAllSubmissions(): Promise<{ data: ScoreSubmission[]; error?: string }> {
     const sessionScores = getSessionScores();
+    let authUserId = '';
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      authUserId = authData?.user?.id || '';
+    } catch {
+      // Unauthenticated visitor
+    }
 
     try {
       const { data, error } = await supabase
@@ -418,11 +452,11 @@ export const scoreService = {
         .select('*')
         .order('submitted_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const submissions: ScoreSubmission[] = (data || []).map((row) => ({
           id: row.id,
           examId: row.exam_id,
-          userId: row.candidate_id || (row.is_own ? 'current_user' : ''),
+          userId: row.candidate_id || (row.is_own ? (authUserId || 'current_user') : ''),
           userName: row.candidate_name,
           marksObtained: Number(row.obtained_marks),
           totalMarks: Number(row.total_marks),
@@ -438,16 +472,18 @@ export const scoreService = {
         }));
 
         for (const b of initialSubmissions) {
-          if (!submissions.some(s => s.examId === b.examId && s.userId === b.userId)) {
+          if (!submissions.some((s) => s.examId === b.examId && s.userId === b.userId)) {
             submissions.push(b);
           }
         }
 
         for (const sub of sessionScores) {
-          const idx = submissions.findIndex(s => s.examId === sub.examId && s.userId === sub.userId);
-          if (idx >= 0) {
-            submissions[idx] = sub;
-          } else {
+          const alreadyInDb = submissions.some(
+            (s) =>
+              s.examId === sub.examId &&
+              (s.id === sub.id || (s.userId && (s.userId === sub.userId || s.userId === 'current_user')))
+          );
+          if (!alreadyInDb) {
             submissions.push(sub);
           }
         }
@@ -457,10 +493,10 @@ export const scoreService = {
       // View unmigrated
     }
 
-    // Merge benchmark initialSubmissions with candidate's submitted scores
+    // Fallback: only session scores + any initialSubmissions
     const merged: ScoreSubmission[] = [...sessionScores];
     for (const b of initialSubmissions) {
-      if (!merged.some(m => m.examId === b.examId && m.userId === b.userId)) {
+      if (!merged.some((m) => m.examId === b.examId && m.userId === b.userId)) {
         merged.push(b);
       }
     }
@@ -472,7 +508,9 @@ export const scoreService = {
    * Guarded by RLS (auth.uid() = candidate_id).
    */
   async getUserSubmissions(userId: string): Promise<{ data: ScoreSubmission[]; error?: string }> {
-    const sessionUserScores = getSessionScores().filter((s) => s.userId === userId || s.userId === 'current_user');
+    const sessionUserScores = getSessionScores().filter(
+      (s) => s.userId === userId || s.userId === 'current_user'
+    );
 
     try {
       const { data, error } = await supabase
@@ -481,7 +519,7 @@ export const scoreService = {
         .eq('candidate_id', userId)
         .order('submitted_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         const submissions: ScoreSubmission[] = data.map((row) => ({
           id: row.id,
           examId: row.exam_id,
@@ -502,10 +540,7 @@ export const scoreService = {
         }));
 
         for (const sub of sessionUserScores) {
-          const idx = submissions.findIndex(s => s.examId === sub.examId);
-          if (idx >= 0) {
-            submissions[idx] = sub;
-          } else {
+          if (!submissions.some((s) => s.examId === sub.examId)) {
             submissions.push(sub);
           }
         }
@@ -630,9 +665,6 @@ export const scoreService = {
       isFlagged: false,
     };
 
-    // Save to persistent session cache immediately so it is NEVER lost on UI
-    saveSessionScore(newScore);
-
     // Proactively ensure profile and exam exist in database so foreign keys do not fail
     await ensureDependenciesExist(
       submission.examId,
@@ -668,14 +700,18 @@ export const scoreService = {
     );
 
     if (error) {
+      // Save locally only as offline/unmigrated fallback
+      saveSessionScore(newScore);
       console.warn('Supabase remote score insert notice:', error.message);
       return {
         success: true,
         warning:
-          'Score successfully recorded! Note: To permanently sync across all devices, execute the unified_setup.sql in your Supabase SQL Editor.',
+          'Score successfully recorded locally! Note: To permanently sync across all devices, execute the unified_setup.sql in your Supabase SQL Editor.',
       };
     }
 
+    // Clear any stale local session cache once persisted in Supabase
+    removeSessionScore(submission.examId, submission.candidateId);
     return { success: true };
   },
 
